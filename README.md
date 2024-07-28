@@ -1,0 +1,1 @@
+Purpose: Calculate NDVI of a selected area. Landsat Collection 2 Level 2 satellite inagery is used to calculate the NDVI of a selected area. A raster of the caluclated NDVI, the meand and standard NDVI valeus are also returned and displayed in the web application.
