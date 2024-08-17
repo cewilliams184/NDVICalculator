@@ -1,0 +1,6 @@
+{
+    "endpoint": "https://m2m.cr.usgs.gov/api/api/json/stable/",
+    "username": "cwilliams",
+    "password": "sqkaXpEPF43eCh!Q",
+    "timeout": 100
+}
