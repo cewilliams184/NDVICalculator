@@ -3,17 +3,26 @@
 # August 2024
 
 import datetime
-import requests
 import json
+import re
+import requests
+import threading
 import M2M_constants as cn
 import M2M_API_Filters
 
 
+
 class ApiService:
-    def __init__(self, config_file_path):
+    def __init__(self,
+                 config_file_path,
+                 download_filepath = cn.download_path,
+                 sema=cn.sema):
         self.load_config(config_file_path)
         self.api_key = None
         self.contact_id = 0
+        self.download_filepath = download_filepath
+        self.sema = sema
+        self.threads = []
 
     def load_config(self, config_file_path):
         with open(config_file_path, 'r') as config_file:
@@ -47,6 +56,26 @@ class ApiService:
         response = requests.post(url, data=payload, headers=headers, timeout=self.timeout)
         return self.parse_response(response)
 
+    def downloadFile(self, url):
+        self.sema.acquire()
+        attempts = 0
+        try:
+            response = requests.get(url, stream=True)
+            disposition = response.headers['content-disposition']
+            filename = re.findall("filename=(.+)", disposition)[0].strip("\"")
+            print(f"Downloading {filename} ...\n")
+            if config_file_path != "" and self.download_filepath[-1] != "/":
+                filename = "/" + filename
+            open(self.download_filepath + filename, 'wb').write(response.content)
+            print(f"Downloaded {filename}\n")
+            self.sema.release()
+        except Exception as e:
+            print(f"Failed to download from {url}. {e}. Will try to re-download.\n")
+            if attempts < 5:
+                self.sema.release()
+                self.runDownload(self.threads, url)
+                attempts +=1
+
     def parse_response(self, response):
         result = response.json()
 
@@ -58,6 +87,11 @@ class ApiService:
             raise ApiException(f"{result['errorCode']}: {result['errorMessage']}")
 
         return result
+
+    def runDownload(self, threads, url):
+        thread = threading.Thread(target=self.downloadFile, args=(url,))
+        threads.append(thread)
+        thread.start()
 
     def search(self, scene_filter, dataset_name, max_results=100, starting_number=1, sort_field='acquisitionDate',
                sort_direction='DESC'):
@@ -104,12 +138,58 @@ def parse_results(datasets):
         else:
             #return first value in dictionary
             #https://stackoverflow.com/questions/21930498/how-to-get-the-first-value-in-a-python-dictionary
-            # sceneId = cloud_cover_dictionary[0]
+            sceneId = cloud_cover_dictionary[0]
             pass
 
         # find download options for these scenes
         payload = {'datasetName': 'landsat_ot_c2_l2', 'entityIds': sceneId}
-        # downloadOptions = se
+        downloadOptions = api_service.dispatch_request('download-options', payload)
+
+        downloads = []
+        for product in downloadOptions['data']:
+            #Make sure product is available for the scene
+            if product['available'] == True:
+                downloads.append({'entityId': product['entityId'],
+                                  'productId': product['id']})
+        #did we find products?
+        if downloads:
+            requestDownloadCount = len(downloads)
+            #set a label for the download request
+            label = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            payload = {'downloads': downloads,
+                       'label': label
+                       }
+            #Call the downloads to get the direct download urls
+            requestResults = api_service.dispatch_request('download-request', payload)
+
+            #Call the download retrieve method to get download that is immediately available for downlaod
+            if requestResults['data']['preparingDownloads'] is not None and len(requestResults['data']['preparingDownloads']) > 0:
+                payload = {'label': label}
+                moreDownloadUrls = api_service.dispatch_request('dowload-retrieve', payload)
+
+                downloadIds = []
+
+                for download in moreDownloadUrls['available']:
+                    if str(download['downloadID']) in requestResults['newRecords'] or str(download['downloadId']):
+                        downloadIds.append(download['downloadId'])
+                        api_service.runDownload(api_service.threads, download['url'])
+            else:
+                #Get all available downlaods
+                for download in requestResults['data']['availableDownloads']:
+                    api_service.runDownload(api_service.threads, download['url'])
+        else:
+            print("Search found no results.\n")
+
+    print("Downloading files... Please do not close the program\n")
+    for thread in api_service.threads:
+        thread.join()
+
+    print("Complete Downloading")
+
+
+
+
+
 
     return
 
@@ -125,8 +205,16 @@ if api_service.authenticate():
         0],
                                  dataset_name='landsat_ot_c2_l2',
                                  )
+
+
     # print(results)
     print("Found ", len(results), " datasets\n")
     parse_results(results)
+
+    #log out so the API key cannot be used anymore
+    if api_service.dispatch_request('logout') == None:
+        print ("Logged Out\n\n")
+    else:
+        print("Logout Failed\n\n")
 
 
