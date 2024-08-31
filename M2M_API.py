@@ -4,6 +4,7 @@
 
 import datetime
 import json
+import os
 import re
 import requests
 import threading
@@ -69,6 +70,8 @@ class ApiService:
             open(self.download_filepath + filename, 'wb').write(response.content)
             print(f"Downloaded {filename}\n")
             self.sema.release()
+
+
         except Exception as e:
             print(f"Failed to download from {url}. {e}. Will try to re-download.\n")
             if attempts < 5:
@@ -186,11 +189,6 @@ def parse_results(datasets):
 
     print("Complete Downloading")
 
-
-
-
-
-
     return
 
 
@@ -212,7 +210,7 @@ if api_service.authenticate():
     parse_results(results)
 
     #log out so the API key cannot be used anymore
-    if api_service.dispatch_request('logout') == None:
+    if api_service.dispatch_request('logout') is None:
         print ("Logged Out\n\n")
     else:
         print("Logout Failed\n\n")
