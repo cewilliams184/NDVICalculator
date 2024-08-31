@@ -4,11 +4,13 @@
 # Purpose: create flexible class that calculates NDVI from landsat raster files
 # Tutorials Used:
 
-
+import matplotlib.pyplot as plt
 import numpy
 import os
 import rasterio
 from rasterio.plot import show
+import zipfile
+import tarfile
 
 import constants as cn
 
@@ -19,6 +21,7 @@ class NDVI_Calculations():
     def __init__(self,
                  # near_infrared_band=cn.near_infrared_band,
                  # near_infrared_band=None,
+                 results_path=cn.output_path,
                  project_path=cn.project_path,
                  # red_band=cn.red_band,
                  ):
@@ -26,6 +29,7 @@ class NDVI_Calculations():
         self.near_infrared_band = None
         self.project_path = project_path
         self.red_band = None
+        self.results_path = results_path
 
     def initialize_NDVI_Calculations(self):
         self.near_infrared_band = self.locate_latest_near_infrared_band_downloaded()[0]
@@ -49,8 +53,14 @@ class NDVI_Calculations():
         downloaded_files.sort(key=os.path.getctime, reverse=True)
 
         latest_downloaded_file_directory = downloaded_files[0]
+        # with zipfile.ZipFile(latest_downloaded_file_directory,'r') as zip_ref:
+        #     zip_ref.extractall(latest_downloaded_file_directory)
+        if not os.path.exists(latest_downloaded_file_directory):
+            compressed_file = tarfile.open(latest_downloaded_file_directory)
+            compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
+            compressed_file.close()
 
-        #enter directory and pull out file ending in 'B5.tif'
+        # enter directory and pull out file ending in 'B5.tif'
         latest_downloaded_files = os.listdir(latest_downloaded_file_directory)
         for file in latest_downloaded_files:
             if file[-6:] == 'B4.TIF':
@@ -64,6 +74,8 @@ class NDVI_Calculations():
         """ calculate NDVI raster from infrared and red bands"""
         near_infrared_band_rasterio_open = rasterio.open(self.near_infrared_band)
         red_band_rasterio_open = rasterio.open(self.red_band)
+
+        output_name = f'{os.path.split(near_infrared_band_rasterio_open.files[0])[1][:-4]}.png'
 
         near_infrared_band_rasterio_read = near_infrared_band_rasterio_open.read()  # open and read as numpy array
         red_band_rasterio_read = red_band_rasterio_open.read()
@@ -84,6 +96,17 @@ class NDVI_Calculations():
                     near_infrared_band_rasterio_float + red_band_rasterio_float), -999)
         show(ndvi, cmap='summer')
         #save ndvi files to display on web app
+        # kwargs = red_band_rasterio_float.meta
+        # kwargs.update(
+        #     dtype=rasterio.float32,
+        #     count=1,
+        #     compress='lzw')
+
+        output_path = os.path.join(self.results_path,output_name)
+        with rasterio.open(output_path,'w') as dst:
+            dst.write_band(1, ndvi)
+
+
         print(f"NDVI mean: {ndvi.mean()}")
         print(f"NDVI standard deviation: {ndvi.std()}")
         return
