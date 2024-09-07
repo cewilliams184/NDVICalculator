@@ -7,6 +7,7 @@
 import matplotlib.pyplot as plt
 import numpy
 import os
+from PIL import Image
 import rasterio
 from rasterio.plot import show
 import zipfile
@@ -45,7 +46,6 @@ class NDVI_Calculations():
         """ parse data folder for latest near infrared downloaded"""
         global latest_near_infrared, latest_red_band
         data_folder = os.path.join(self.project_path, 'Data')
-        # latest_downloaded_folder = (
         downloaded_files = []
         with os.scandir(data_folder) as it:
             for entry in it:
@@ -53,8 +53,6 @@ class NDVI_Calculations():
         downloaded_files.sort(key=os.path.getctime, reverse=True)
 
         latest_downloaded_file_directory = downloaded_files[0]
-        # with zipfile.ZipFile(latest_downloaded_file_directory,'r') as zip_ref:
-        #     zip_ref.extractall(latest_downloaded_file_directory)
         if not os.path.exists(latest_downloaded_file_directory):
             compressed_file = tarfile.open(latest_downloaded_file_directory)
             compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
@@ -87,25 +85,18 @@ class NDVI_Calculations():
         red_band_rasterio_float = red_band_rasterio_read.astype(float)
 
         numpy.seterr(divide='ignore', invalid='ignore')  # allow 0 division in numpy
-        ndvi = numpy.empty(near_infrared_band_rasterio_open.shape, dtype=rasterio.float32)
-
         check = numpy.logical_or(near_infrared_band_rasterio_float > 0,
                                  red_band_rasterio_float > 0)  # apply filter on values > 0 to be used to calculate NDVI
 
         ndvi = numpy.where(check, (near_infrared_band_rasterio_float - red_band_rasterio_float) / (
                     near_infrared_band_rasterio_float + red_band_rasterio_float), -999)
         show(ndvi, cmap='summer')
+
         #save ndvi files to display on web app
-        # kwargs = red_band_rasterio_float.meta
-        # kwargs.update(
-        #     dtype=rasterio.float32,
-        #     count=1,
-        #     compress='lzw')
-
-        output_path = os.path.join(self.results_path,output_name)
-        with rasterio.open(output_path,'w') as dst:
-            dst.write_band(1, ndvi)
-
+        im = Image.fromarray(ndvi[0])
+        if im.mode != 'L':
+            im = im.convert('L')
+        im.save(os.path.join(self.results_path,output_name))
 
         print(f"NDVI mean: {ndvi.mean()}")
         print(f"NDVI standard deviation: {ndvi.std()}")
