@@ -15,18 +15,19 @@ import M2M_API_Filters
 
 class ApiService:
     def __init__(self,
-                 config_file_path,
+                 config_file_path = cn.config_file_path,
                  download_filepath = cn.download_path,
                  sema=cn.sema):
-        self.load_config(config_file_path)
+        self.config_file_path = config_file_path
+        self.load_config()
         self.api_key = None
         self.contact_id = 0
         self.download_filepath = download_filepath
         self.sema = sema
         self.threads = []
 
-    def load_config(self, config_file_path):
-        with open(config_file_path, 'r') as config_file:
+    def load_config(self):
+        with open(self.config_file_path, 'r') as config_file:
             config = json.load(config_file)
             self.endpoint = config['endpoint']
             self.username = config['username']
@@ -193,13 +194,11 @@ def parse_results(datasets):
 
 
 # Example usage:
-config_file_path = r'C:\PersonalProject\NDVICalculator\Data\config.json'
+config_file_path = cn.config_file_path
 api_service = ApiService(config_file_path)
 
 if api_service.authenticate():
-    results = api_service.search(scene_filter=M2M_API_Filters.create_scene_filter(r"C:\PersonalProject\web-projects"
-                                                                                  r"\PocosinWildlifeRefuge\data\Shapefiles"
-                                                                                  r"\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")[
+    results = api_service.search(scene_filter=M2M_API_Filters.create_scene_filter(r"C:\Users\cewil\Documents\GitHub\NDVICalculator\InputData\Shapefiles\Pocosin_FWS\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")[
         0],
                                  dataset_name='landsat_ot_c2_l2',
                                  )

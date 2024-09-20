@@ -35,10 +35,7 @@ def filter_on_centroid(result_extents):
     # https://stackoverflow.com/questions/4355894/how-to-get-center-of-set-of-points-using-python
     # find centroid
     # parse_results(result_extents)
-    search_polygon = create_scene_filter(r"C:\PersonalProject\web-projects"
-                                  r"\PocosinWildlifeRefuge\data"
-                                  r"\Shapefiles"
-                                  r"\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")[1]
+    search_polygon = create_scene_filter(r"C:\Users\cewil\Documents\GitHub\NDVICalculator\InputData\Shapefiles\Pocosin_FWS\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")[1]
     x,y=zip(*search_polygon)
     center=(max(x)+min(x))/2., (max(y)+min(y))/2.
 
