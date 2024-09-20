@@ -33,9 +33,13 @@ class NDVI_Calculations():
         self.results_path = results_path
 
     def initialize_NDVI_Calculations(self):
-        self.near_infrared_band = self.locate_latest_near_infrared_band_downloaded()[0]
-        self.red_band = self.locate_latest_near_infrared_band_downloaded()[1]
-        self.calcualte_NDVI()
+        extracted_files = self.locate_latest_near_infrared_band_downloaded()
+        if extracted_files != None:
+            self.near_infrared_band = self.set_infrared_and_red_band_variables(extracted_files)[0]
+            self.red_band = self.set_infrared_and_red_band_variables(extracted_files)[1]
+            self.calcualte_NDVI()
+        else:
+            print("The NDVI value could not be calculated because no files were found for the selected area")
         return
 
     def execute_NDVI_Calculations(self):
@@ -44,27 +48,35 @@ class NDVI_Calculations():
 
     def locate_latest_near_infrared_band_downloaded(self):
         """ parse data folder for latest near infrared downloaded"""
-        global latest_near_infrared, latest_red_band
+        global latest_near_infrared, latest_red_band, extracted_files
         data_folder = os.path.join(self.project_path, 'Data')
         downloaded_files = []
         with os.scandir(data_folder) as it:
             for entry in it:
-                downloaded_files.append(entry.path)
+                if not entry.name.endswith('.json'):
+                    downloaded_files.append(entry.path)
         downloaded_files.sort(key=os.path.getctime, reverse=True)
 
-        latest_downloaded_file_directory = downloaded_files[0]
-        if not os.path.exists(latest_downloaded_file_directory):
-            compressed_file = tarfile.open(latest_downloaded_file_directory)
-            compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
-            compressed_file.close()
+        latest_downloaded_file_directory = downloaded_files
+        extracted_files = None
+        for file in latest_downloaded_file_directory:
+            if file.endswith('.tar'):
+                if file[:-4] not in latest_downloaded_file_directory:
+                    compressed_file = tarfile.open(file)
+                    compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
+                    compressed_file.close()
+                    extracted_files = file[:-4]
+            #TODO: check if extracted files is empty: if it is check if uncompressed folder exists in directory and set that folder as extracted_files
+        return extracted_files
 
+    def set_infrared_and_red_band_variables(self, extracted_files):
         # enter directory and pull out file ending in 'B5.tif'
-        latest_downloaded_files = os.listdir(latest_downloaded_file_directory)
+        latest_downloaded_files = os.listdir(extracted_files)
         for file in latest_downloaded_files:
             if file[-6:] == 'B4.TIF':
-                latest_red_band = os.path.join(latest_downloaded_file_directory,file)
+                latest_red_band = os.path.join(extracted_files,file)
             if file[-6:] == 'B5.TIF':
-                latest_near_infrared = os.path.join(latest_downloaded_file_directory,file)
+                latest_near_infrared = os.path.join(extracted_files,file)
 
         return latest_near_infrared, latest_red_band
 
@@ -96,6 +108,8 @@ class NDVI_Calculations():
         im = Image.fromarray(ndvi[0])
         if im.mode != 'L':
             im = im.convert('L')
+        if not os.path.exists(self.results_path):
+            os.makedirs(self.results_path)
         im.save(os.path.join(self.results_path,output_name))
 
         print(f"NDVI mean: {ndvi.mean()}")

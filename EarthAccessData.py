@@ -7,7 +7,6 @@ from pyproj import Transformer
 
 from Convert2GeopandasObject import Convert2GeopandasObject
 
-# netrc.netrc(r"C:\PersonalProject\NDVICalculator\EarthAccess_netrc")
 earthaccess.login(strategy="netrc")
 
 
@@ -39,7 +38,7 @@ class AccessEarthAccessData(object):
             keyword="sentinel 5p near infrared",
             cloud_hosted=False,
             temporal=("2024-07-11", "2024-07-11"),
-            polygon=self.read_coordinates_from_polygon(Convert2GeopandasObject("C:\PersonalProject\web-projects\PocosinWildlifeRefuge\data\Shapefiles\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")).reverse()
+            polygon=self.read_coordinates_from_polygon(Convert2GeopandasObject(r"C:\Users\cewil\Documents\GitHub\NDVICalculator\InputData\Shapefiles\Pocosin_FWS\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")).reverse()
         )
         print(user_defined_polygon)
         return user_defined_polygon
