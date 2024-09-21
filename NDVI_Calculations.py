@@ -60,13 +60,15 @@ class NDVI_Calculations():
         latest_downloaded_file_directory = downloaded_files
         extracted_files = None
         for file in latest_downloaded_file_directory:
-            if file.endswith('.tar'):
+            if file.endswith('.tar'): #extract compressed .tar files
                 if file[:-4] not in latest_downloaded_file_directory:
                     compressed_file = tarfile.open(file)
                     compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
                     compressed_file.close()
                     extracted_files = file[:-4]
-            #TODO: check if extracted files is empty: if it is check if uncompressed folder exists in directory and set that folder as extracted_files
+            else: #create list of files in uncompressed folder
+                extracted_files = file
+                break
         return extracted_files
 
     def set_infrared_and_red_band_variables(self, extracted_files):
@@ -90,8 +92,8 @@ class NDVI_Calculations():
         near_infrared_band_rasterio_read = near_infrared_band_rasterio_open.read()  # open and read as numpy array
         red_band_rasterio_read = red_band_rasterio_open.read()
 
-        show(near_infrared_band_rasterio_read)
-        show(red_band_rasterio_read)
+        # show(near_infrared_band_rasterio_read)
+        # show(red_band_rasterio_read)
 
         near_infrared_band_rasterio_float = near_infrared_band_rasterio_read.astype(float)
         red_band_rasterio_float = red_band_rasterio_read.astype(float)
@@ -102,7 +104,7 @@ class NDVI_Calculations():
 
         ndvi = numpy.where(check, (near_infrared_band_rasterio_float - red_band_rasterio_float) / (
                     near_infrared_band_rasterio_float + red_band_rasterio_float), -999)
-        show(ndvi, cmap='summer')
+        # show(ndvi, cmap='summer')
 
         #save ndvi files to display on web app
         im = Image.fromarray(ndvi[0])
@@ -111,7 +113,9 @@ class NDVI_Calculations():
         if not os.path.exists(self.results_path):
             os.makedirs(self.results_path)
         im.save(os.path.join(self.results_path,output_name))
+        #TODO: save infrared and red images as .pngs to be pulled into web app for viewing
 
+        #TODO: save values in a database
         print(f"NDVI mean: {ndvi.mean()}")
         print(f"NDVI standard deviation: {ndvi.std()}")
         return
