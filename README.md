@@ -1,7 +1,7 @@
 Purpose: Calculate NDVI of a selected area. Landsat Collection 2 Level 2 satellite inagery is used to calculate the NDVI of a selected area. A raster of the caluclated NDVI, the meand and standard NDVI valeus are also returned and displayed in the web application.
 
-Steps: \n
-1. The process is kicked off from the script: NDVI_Calculator \n
+Steps: 
+1. The process is kicked off from the script: NDVI_Calculator 
 2. The NDVI_Calculator calls the M2M_API.py which uses user-defined coordinate pairs to filter scenes in the EROS M2M API with the purpose of downloading the latest landsat-2 dataset
 3. The M2M_API.py makes use of functions defined in M2M_API_Filter to filter the scenes by location and time (data created within the last month)
 4. Once the M2M_API.py has finished running the NDVI calculations are run
