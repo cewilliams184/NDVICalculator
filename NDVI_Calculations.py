@@ -14,6 +14,7 @@ import zipfile
 import tarfile
 
 import constants as cn
+import M2M_API as M2M_API
 
 
 # convert .tif to a numpy array
@@ -37,14 +38,14 @@ class NDVI_Calculations():
         if extracted_files != None:
             self.near_infrared_band = self.set_infrared_and_red_band_variables(extracted_files)[0]
             self.red_band = self.set_infrared_and_red_band_variables(extracted_files)[1]
-            self.calcualte_NDVI()
+            ndvi = self.calcualte_NDVI()
         else:
             print("The NDVI value could not be calculated because no files were found for the selected area")
-        return
+        return ndvi
 
     def execute_NDVI_Calculations(self):
-        self.initialize_NDVI_Calculations()
-        return
+        ndvi = self.initialize_NDVI_Calculations()
+        return ndvi
 
     def locate_latest_near_infrared_band_downloaded(self):
         """ parse data folder for latest near infrared downloaded"""
@@ -118,10 +119,11 @@ class NDVI_Calculations():
         #TODO: save values in a database
         print(f"NDVI mean: {ndvi.mean()}")
         print(f"NDVI standard deviation: {ndvi.std()}")
-        return
+        return ndvi
 
 
 def main():
+    M2M = M2M_API # search for files based
     NDVIC = NDVI_Calculations()
     NDVIC.execute_NDVI_Calculations()
 

@@ -115,7 +115,7 @@ class ApiException(Exception):
     pass
 
 
-def parse_results(datasets):
+def parse_results(datasets, coordinates):
     # https://m2m.cr.usgs.gov/api/docs/example/download_data-py
     # search document for : download datasets
     for dataset in datasets['data']['results']:
@@ -127,7 +127,7 @@ def parse_results(datasets):
         sceneIds = []
         for result in datasets['data']['results']:
             #determine if centroid in result polgyon
-            centroid_in_polygon = M2M_API_Filters.filter_on_centroid(result)
+            centroid_in_polygon = M2M_API_Filters.filter_on_centroid(result, coordinates)
             if centroid_in_polygon == True:
                 sceneIds.append(result['entityId'])
         #find smallest cloud cover dataset
@@ -196,22 +196,21 @@ def parse_results(datasets):
 # Example usage:
 config_file_path = cn.config_file_path
 api_service = ApiService(config_file_path)
+coordinates = cn.coordinates
 
 if api_service.authenticate():
-    results = api_service.search(scene_filter=M2M_API_Filters.create_scene_filter(r"C:\Users\cewil\Documents\GitHub\NDVICalculator\InputData\Shapefiles\Pocosin_FWS\Pocosin_FWS\Pocosin_FWS_AOI_WGS84.shp")[
-        0],
+
+    results = api_service.search(scene_filter=M2M_API_Filters.create_scene_filter(coordinates)[0],
                                  dataset_name='landsat_ot_c2_l2',
                                  )
 
 
     # print(results)
     print("Found ", len(results), " datasets\n")
-    parse_results(results)
+    parse_results(results, coordinates)
 
     #log out so the API key cannot be used anymore
     if api_service.dispatch_request('logout') is None:
         print ("Logged Out\n\n")
     else:
         print("Logout Failed\n\n")
-
-
