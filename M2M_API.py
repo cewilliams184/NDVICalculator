@@ -7,6 +7,7 @@ import json
 import os
 import re
 import requests
+import sys
 import threading
 import M2M_constants as cn
 import M2M_API_Filters
@@ -66,7 +67,7 @@ class ApiService:
             disposition = response.headers['content-disposition']
             filename = re.findall("filename=(.+)", disposition)[0].strip("\"")
             print(f"Downloading {filename} ...\n")
-            if config_file_path != "" and self.download_filepath[-1] != "/":
+            if self.config_file_path != "" and self.download_filepath[-1] != "/":
                 filename = "/" + filename
             open(self.download_filepath + filename, 'wb').write(response.content)
             print(f"Downloaded {filename}\n")
@@ -115,7 +116,7 @@ class ApiException(Exception):
     pass
 
 
-def parse_results(datasets, coordinates):
+def parse_results(datasets, coordinates, api_service):
     # https://m2m.cr.usgs.gov/api/docs/example/download_data-py
     # search document for : download datasets
     for dataset in datasets['data']['results']:
@@ -193,24 +194,49 @@ def parse_results(datasets, coordinates):
     return
 
 
+class M2M(object):
+    def __init__(self,
+                 config_file_path = cn.config_file_path,
+                 coordinates=None,
+                 ):
+        if coordinates is None:
+            coordinates = sys.argv
+        self.api_service = None
+        self.config_file_path = config_file_path
+        self.coordinates = coordinates
+
+    def initialize_M2M(self):
+        self.api_service = ApiService(self.config_file_path)
+        self.coordinates = sys.argv
+    def execute_M2M(self):
+        self.initialize_M2M()
+
+    def pull_data_from_api_service(self):
+        if self.api_service.authenticate():
+
+            results = self.api_service.search(scene_filter=M2M_API_Filters.create_scene_filter(self.coordinates)[0],
+                                         dataset_name='landsat_ot_c2_l2',
+                                         )
+
+            # print(results)
+            print("Found ", len(results), " datasets\n")
+            filtered_results = parse_results(results, self.coordinates, self.api_service)
+
+            # log out so the API key cannot be used anymore
+            if self.api_service.dispatch_request('logout') is None:
+                print("Logged Out\n\n")
+            else:
+                print("Logout Failed\n\n")
+        return filtered_results
+
 # Example usage:
-config_file_path = cn.config_file_path
-api_service = ApiService(config_file_path)
-coordinates = cn.coordinates
-
-if api_service.authenticate():
-
-    results = api_service.search(scene_filter=M2M_API_Filters.create_scene_filter(coordinates)[0],
-                                 dataset_name='landsat_ot_c2_l2',
-                                 )
+# config_file_path = cn.config_file_path
+# api_service = ApiService(config_file_path)
+# # coordinates = cn.coordinates
+# coordinates = sys.argv
 
 
-    # print(results)
-    print("Found ", len(results), " datasets\n")
-    parse_results(results, coordinates)
 
-    #log out so the API key cannot be used anymore
-    if api_service.dispatch_request('logout') is None:
-        print ("Logged Out\n\n")
-    else:
-        print("Logout Failed\n\n")
+
+if __name__ == '__main__':
+    M2M = M2M(sys.argv)
