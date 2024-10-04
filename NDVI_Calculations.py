@@ -11,6 +11,7 @@ from PIL import Image
 import rasterio
 from rasterio.plot import show
 import zipfile
+import sys
 import tarfile
 
 import constants as cn
@@ -44,8 +45,8 @@ class NDVI_Calculations():
         return ndvi
 
     def execute_NDVI_Calculations(self):
-        ndvi = self.initialize_NDVI_Calculations()
-        return ndvi
+        result = self.initialize_NDVI_Calculations()
+        return result
 
     def locate_latest_near_infrared_band_downloaded(self):
         """ parse data folder for latest near infrared downloaded"""
@@ -119,11 +120,13 @@ class NDVI_Calculations():
         #TODO: save values in a database
         print(f"NDVI mean: {ndvi.mean()}")
         print(f"NDVI standard deviation: {ndvi.std()}")
-        return ndvi
+        result = {"NDVI_mean": str(ndvi.mean()), "NDVI_standard_deviation": str(ndvi.std())}
+        #TODO: determine how to display resulting NDVI as a layer on the leaflet map
+        return result
 
 
 def main():
-    M2M = M2M_API # search for files based
+    M2M_API.M2M(sys.argv)  # search for files based
     NDVIC = NDVI_Calculations()
     NDVIC.execute_NDVI_Calculations()
 
