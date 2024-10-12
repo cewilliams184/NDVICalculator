@@ -11,7 +11,7 @@ read_coordinates_from_polygon = AccessEarthAccessData.read_coordinates_from_poly
 
 
 def create_scene_filter(polygon): #TODO: feed coordinates from user drawn polygon here
-    polygon = [[35.95397342058534, -76.64996823193624], [35.95397342058534, -75.97293004875567], [35.52305406304399, -75.97293004875567], [35.52305406304399, -76.64996823193624], [35.95397342058534, -76.64996823193624]]
+    # polygon = [[35.95397342058534, -76.64996823193624], [35.95397342058534, -75.97293004875567], [35.52305406304399, -75.97293004875567], [35.52305406304399, -76.64996823193624], [35.95397342058534, -76.64996823193624]]
     spatialFilter = {'filterType': "mbr",
                      'lowerLeft': {'latitude': polygon[1][1], 'longitude': polygon[1][0]},
                      'upperRight': {'latitude': polygon[3][1], 'longitude': polygon[3][0]}}

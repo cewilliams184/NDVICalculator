@@ -39,7 +39,7 @@ class NDVI_Calculations():
         if extracted_files != None:
             self.near_infrared_band = self.set_infrared_and_red_band_variables(extracted_files)[0]
             self.red_band = self.set_infrared_and_red_band_variables(extracted_files)[1]
-            ndvi = self.calcualte_NDVI()
+            ndvi = self.calculate_ndvi()
         else:
             print("The NDVI value could not be calculated because no files were found for the selected area")
         return ndvi
@@ -50,27 +50,28 @@ class NDVI_Calculations():
 
     def locate_latest_near_infrared_band_downloaded(self):
         """ parse data folder for latest near infrared downloaded"""
-        global latest_near_infrared, latest_red_band, extracted_files
+        # global latest_near_infrared, latest_red_band, extracted_files
         data_folder = os.path.join(self.project_path, 'Data')
         downloaded_files = []
         with os.scandir(data_folder) as it:
             for entry in it:
                 if not entry.name.endswith('.json'):
                     downloaded_files.append(entry.path)
-        downloaded_files.sort(key=os.path.getctime, reverse=True)
+        downloaded_files = sorted(downloaded_files, key=os.path.getmtime, reverse=True)
 
         latest_downloaded_file_directory = downloaded_files
         extracted_files = None
         for file in latest_downloaded_file_directory:
-            if file.endswith('.tar'): #extract compressed .tar files
-                if file[:-4] not in latest_downloaded_file_directory:
-                    compressed_file = tarfile.open(file)
-                    compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
-                    compressed_file.close()
-                    extracted_files = file[:-4]
+            if file.endswith('.tar'):#extract compressed .tar files
+                    if not os.path.exists(file[:-4]):
+                        compressed_file = tarfile.open(file)
+                        compressed_file.extractall(os.path.join(self.project_path, 'Data', downloaded_files[0][:-4]))
+                        compressed_file.close()
+                        extracted_files = file[:-4]
+                    else:
+                        result = 'File has already been extracted'
             else: #create list of files in uncompressed folder
                 extracted_files = file
-                break
         return extracted_files
 
     def set_infrared_and_red_band_variables(self, extracted_files):
@@ -84,7 +85,7 @@ class NDVI_Calculations():
 
         return latest_near_infrared, latest_red_band
 
-    def calcualte_NDVI(self):
+    def calculate_ndvi(self):
         """ calculate NDVI raster from infrared and red bands"""
         near_infrared_band_rasterio_open = rasterio.open(self.near_infrared_band)
         red_band_rasterio_open = rasterio.open(self.red_band)
@@ -118,18 +119,19 @@ class NDVI_Calculations():
         #TODO: save infrared and red images as .pngs to be pulled into web app for viewing
 
         #TODO: save values in a database
-        print(f"NDVI mean: {ndvi.mean()}")
-        print(f"NDVI standard deviation: {ndvi.std()}")
-        result = {"NDVI_mean": str(ndvi.mean()), "NDVI_standard_deviation": str(ndvi.std())}
+        # print(f"NDVI mean: {ndvi.mean()}")
+        # print(f"NDVI standard deviation: {ndvi.std()}")
+        result = f"NDVI_mean: {ndvi.mean()}, NDVI_standard_deviation: {ndvi.std()}"
         #TODO: determine how to display resulting NDVI as a layer on the leaflet map
         return result
 
 
 def main():
-    M2M_API.M2M(sys.argv)  # search for files based
-    NDVIC = NDVI_Calculations()
-    NDVIC.execute_NDVI_Calculations()
-
+    M2M_API.main() # search for files based
+    ndvic = NDVI_Calculations()
+    ndvi = ndvic.execute_NDVI_Calculations()
+    print(ndvi)
+    return
 
 if __name__ == "__main__":
     main()
