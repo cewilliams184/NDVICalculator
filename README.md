@@ -1,5 +1,5 @@
 Purpose: Calculate NDVI of a selected area. Landsat Collection 2 Level 2 satellite imagery is used to calculate the NDVI of a selected area. A raster of the caluclated NDVI, the mean and standard NDVI valeus are also returned and displayed in the web application.
-Process Kick off: the process starts when an event listener is activated from the NDVI web application when a rectangle is drawn in the web app by a user. The rectangles coordinates are fed to the NDVI_Calcualtor script as inputs for the proces
+Process Kick off: the process starts when an event listener is activated from the NDVI web application when a rectangle is drawn in the web app by a user. The rectangles coordinates are fed to the NDVI_Calcualtor script as inputs for the process.
 
 Steps: 
 1. The process starts at the script: NDVI_Calculator 
