@@ -4,7 +4,7 @@
 
 import datetime
 import json
-# import os
+import os
 import re
 import requests
 import sys
@@ -13,7 +13,7 @@ import threading
 from matplotlib.cbook import ls_mapper_r
 
 import M2M_constants as cn
-import M2M_API_Filters
+import M2M_API_Filters_Raleigh
 # from M2M_constants import result_path
 
 
@@ -48,7 +48,7 @@ class M2M:
         self.api_key = None
         self.contact_id = 0
         self.download_filepath = download_filepath
-        self.rectangle = self.format_coordinates()
+        # self.rectangle = self.format_coordinates()
         self.sema = sema
         self.threads = []
 
@@ -133,9 +133,9 @@ class M2M:
             sceneIds = []
             for result in datasets['data']['results']:
                 # determine if centroid in result polygon
-                centroid_in_polygon = M2M_API_Filters.filter_on_centroid(result, self.rectangle)
-                if centroid_in_polygon == True:
-                    sceneIds.append(result['entityId'])
+                # centroid_in_polygon = M2M_API_Filters_Raleigh.filter_on_centroid(result, self.rectangle)
+                # if centroid_in_polygon == True:
+                sceneIds.append(result['entityId'])
             # find smallest cloud cover dataset
             if len(sceneIds) > 1:
                 cloud_cover_dictionary = {}
@@ -213,7 +213,7 @@ class M2M:
         # api_service.load_config()
         if self.authentication:
 
-            results = self.search(scene_filter=M2M_API_Filters.create_scene_filter(self.rectangle)[0],
+            results = self.search(scene_filter=M2M_API_Filters_Raleigh.create_scene_filter()[0],
                                   dataset_name='landsat_ot_c2_l2')
 
             # print(results)

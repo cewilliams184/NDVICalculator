@@ -10,8 +10,8 @@ AccessEarthAccessData = AccessEarthAccessData()
 read_coordinates_from_polygon = AccessEarthAccessData.read_coordinates_from_polygon
 
 
-def create_scene_filter(polygon): #TODO: feed coordinates from user drawn polygon here
-    # polygon = [[35.95397342058534, -76.64996823193624], [35.95397342058534, -75.97293004875567], [35.52305406304399, -75.97293004875567], [35.52305406304399, -76.64996823193624], [35.95397342058534, -76.64996823193624]]
+def create_scene_filter(): #TODO: feed coordinates from user drawn polygon here
+    polygon = [[35.95397342058534, -76.64996823193624], [35.95397342058534, -75.97293004875567], [35.52305406304399, -75.97293004875567], [35.52305406304399, -76.64996823193624], [35.95397342058534, -76.64996823193624]]
     spatialFilter = {'filterType': "mbr",
                      'lowerLeft': {'latitude': polygon[1][0], 'longitude': polygon[1][1]},
                      'upperRight': {'latitude': polygon[3][0], 'longitude': polygon[3][1]}}
@@ -24,10 +24,8 @@ def create_scene_filter(polygon): #TODO: feed coordinates from user drawn polygo
 
 def create_temporal_filter():
     # TODO: set start to beginning on one month previous current_month = datetime.now().month
-    temporal_filter = {'start': '2024-08-01', 'end': datetime.datetime.now().strftime("%Y-%m-%d")}
+    temporal_filter = {'start': (datetime.datetime.now() - datetime.timedelta(days=30)).strftime("%Y-%m-%d") , 'end': datetime.datetime.now().strftime("%Y-%m-%d")}
     return temporal_filter
-
-
 
 
 def filter_on_centroid(result_extents, coordinates):

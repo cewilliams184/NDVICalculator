@@ -11,4 +11,5 @@ red_band= os.path.join(project_path, r"Data\LC09_L2C2_20240722\LC08_L2SP_016035_
 raster_name=os.path.split(near_infrared_band)[-1].split('_')[-5]
 
 #output path
-output_path= os.path.join(project_path, 'Results')
+output_path= os.path.join(r'C:\Users\cewil\Documents\GitHub\Portfolio_ReactWithASP\portfolio_reactwithasp.client\Images')
+result_path = r"C:\\Users\cewil\Documents\GitHub\NDVICalculator\Results"

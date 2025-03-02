@@ -1,3 +1,6 @@
 InputData/
 Results/
 Data/
+/Data_Meh
+/__pycache__
+/Data
