@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/Data/LC08_L2SP_015035_20241028_20241104_02_T1" />
+      <excludeFolder url="file://$MODULE_DIR$/Data/LC08_L2SP_016035_20241019_20241029_02_T1" />
+      <excludeFolder url="file://$MODULE_DIR$/Data/LC08_L2SR_138116_20240128_20240207_02_T2" />
+      <excludeFolder url="file://$MODULE_DIR$/Data/LC09_L2SP_014035_20241013_20241014_02_T1" />
+      <excludeFolder url="file://$MODULE_DIR$/Data/LC09_L2SP_015035_20241121_20241126_02_T1" />
+      <excludeFolder url="file://$MODULE_DIR$/Data/LC09_L2SP_015035_20241207_20241210_02_T1" />
+      <excludeFolder url="file://$MODULE_DIR$/Data_Meh" />
+      <excludeFolder url="file://$MODULE_DIR$/InputData" />
+      <excludeFolder url="file://$MODULE_DIR$/Results" />
+    </content>
     <orderEntry type="jdk" jdkName="Python 3.12" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

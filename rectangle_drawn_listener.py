@@ -45,7 +45,10 @@ def process_rectangle():
             #note: time should be longer to account for download times.
             #TODO: add a waiting bar and time counter to webpage and explaining what's happinging, downloading, process, etc, send results to an email?
             #format outs
-            output = outs.decode("utf-8").split('\r')[0]
+            print(errs.decode("utf-8").split('\r'))
+            output = outs.decode("utf-8").split('\r')[1]
+            print(output)
+
 
 
         except TimeoutExpired:
@@ -57,7 +60,7 @@ def process_rectangle():
 
     except Exception as e:
         return jsonify({'error': str(e), 'status': 'failed'}), 500
-    return jsonify({f'output': str(output), 'status': 'success'}), 200
+    return {f'NDVI_mean': str(output.split(',')[0]), 'NDVI_StandardDeviation': str(output.split(',')[1]),'image_path': str(output.split(',')[2]), 'image_bounds_bottom': output.split(',')[4],'image_bounds_left': output.split(',')[3][2:], 'image_bounds_right': output.split(',')[5], 'image_bounds_top': output.split(',')[6][:-2],'image_center_x': output.split(',')[7][1:],'image_center_y': output.split(',')[8][:-1], 'status': 'success'}, 200
     # return jsonify({'message': 'Rectangle processed successfully'}), 200
 
 if __name__ == '__main__':
